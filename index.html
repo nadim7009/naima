@@ -29,6 +29,10 @@ body{min-height:100%;background:var(--night);color:var(--ink);font-family:var(--
 #sky{position:fixed;inset:0;width:100%;height:100%;z-index:0}
 .bar{position:fixed;left:0;right:0;height:12vh;background:#04030c;z-index:5;pointer-events:none}
 .bar.top{top:0}.bar.bot{bottom:0}
+main,.vert{transition:opacity 1.2s ease}
+body.gaze main,body.gaze .vert{opacity:0;pointer-events:none}
+#gcap{position:fixed;left:0;right:0;bottom:calc(14vh + env(safe-area-inset-bottom,0px));z-index:4;text-align:center;font-family:var(--hand);font-weight:600;font-size:clamp(22px,5vw,32px);color:#fff;padding:0 16px;text-shadow:0 0 18px rgba(255,150,200,.9),0 2px 6px rgba(5,2,25,.9);opacity:0;transition:opacity 1.2s;pointer-events:none}
+body.gaze #gcap{opacity:1}
 .go .bar{animation:bar 1.6s .4s cubic-bezier(.7,0,.2,1) forwards}.go .bar.bot{animation-name:barb}
 
 /* intro envelope */
@@ -171,6 +175,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;letter-spacing:.2em;t
 <canvas id="sky" aria-hidden="true"></canvas>
 <div class="bar top" aria-hidden="true"></div><div class="bar bot" aria-hidden="true"></div>
 <div class="vert" aria-hidden="true">君が生まれた日</div>
+<div id="gcap" aria-live="polite">Look up, Naima. The stars wrote your name.</div>
 <div id="gate">
   <div class="in">
     <small>11月4日</small>
@@ -193,7 +198,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;letter-spacing:.2em;t
       <div class="u"><b id="s">00</b><small>sec</small></div>
     </div>
     <div class="status" id="status">The sky is getting ready for you</div>
-    <div class="row"><button class="btn" id="music" aria-pressed="false">♪ Play the music box</button><button class="btn" id="fwbtn">✦ Light the fireworks</button></div>
+    <div class="row"><button class="btn" id="music" aria-pressed="false">♪ Play the music box</button><button class="btn" id="fwbtn">✦ Light the fireworks</button><button class="btn" id="gazebtn">☾ Look at the sky</button></div>
     <div class="tip">Tap anywhere in the sky to send up a lantern</div>
   </div></section>
 
@@ -285,6 +290,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;letter-spacing:.2em;t
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const cv = document.getElementById('sky'), ctx = cv.getContext('2d');
   const M = 40; // parallax margin around each pre-rendered layer
+  let moon, con, conT = 0, gazing = false;
   let W, H, D, layers = {}, stars = [], petals = [], burst = [], lanterns = [], motes = [], shoots = [];
   const rnd = (a, b) => a + Math.random() * (b - a);
   const seeded = s => () => (s = (s * 16807) % 2147483647) / 2147483647;
@@ -368,6 +374,20 @@ footer{text-align:center;color:var(--muted);font-size:12px;letter-spacing:.2em;t
     cv.width = W * D; cv.height = H * D; ctx.setTransform(D, 0, 0, D, 0, 0);
     layers = { sky: paintSky(), clouds: paintClouds(), far: paintFar(), near: paintNear(), fg: paintFg() };
     stars = Array.from({length: Math.round(W * H / 3800)}, () => ({x: rnd(-M, W + M), y: rnd(-M, H * .55), r: rnd(.3, 1.5), p: rnd(0, 6), s: rnd(.5, 2)}));
+    const mr = Math.min(W, H) * .045 + 16, mc = document.createElement('canvas'); mc.width = mc.height = mr * 6 * D;
+    const mx = mc.getContext('2d'); mx.scale(D, D);
+    const mg = mx.createRadialGradient(mr * 3, mr * 3, mr * .8, mr * 3, mr * 3, mr * 3); mg.addColorStop(0, 'rgba(255,236,200,.45)'); mg.addColorStop(1, 'rgba(255,200,220,0)');
+    mx.fillStyle = mg; mx.fillRect(0, 0, mr * 6, mr * 6);
+    mx.fillStyle = '#fff4d6'; mx.beginPath(); mx.arc(mr * 3, mr * 3, mr, 0, 7); mx.fill();
+    mx.globalCompositeOperation = 'destination-out'; mx.beginPath(); mx.arc(mr * 3.55, mr * 2.65, mr * .9, 0, 7); mx.fill();
+    moon = {c: mc, r: mr};
+    const L = {N: [[[0,4],[0,0],[2,4],[2,0]]], A: [[[0,4],[1,0],[2,4]],[[.5,2.4],[1.5,2.4]]], I: [[[1,0],[1,4]]], M: [[[0,4],[0,0],[1,2.2],[2,0],[2,4]]]};
+    const u = Math.min(W * .82 / 14, H * .3 / 4), x0 = (W - 14 * u) / 2, y0 = H * .1, CR = seeded(5);
+    con = {segs: [], pts: []};
+    [...'NAIMA'].forEach((ch, i) => L[ch].forEach(path => {
+      const P = path.map(([a, b]) => [x0 + (i * 3 + a) * u + (CR() - .5) * u * .14, y0 + b * u + (CR() - .5) * u * .14]);
+      con.pts.push(...P); for (let k = 1; k < P.length; k++) con.segs.push([P[k - 1], P[k]]);
+    }));
     motes = Array.from({length: 26}, () => ({x: rnd(0, W), y: rnd(H * .5, H), r: rnd(1, 2.4), v: rnd(.15, .5), p: rnd(0, 6)}));
   }
   const petal = (x, y, fast) => ({x, y, s: rnd(6, 13), vy: fast ? rnd(-7, -2) : rnd(.4, 1.2), vx: fast ? rnd(-4, 4) : rnd(-.2, .9),
@@ -440,6 +460,15 @@ footer{text-align:center;color:var(--muted);font-size:12px;letter-spacing:.2em;t
     ctx.globalAlpha = 1; layer(layers.sky, .1);
     for (const s of stars) { ctx.globalAlpha = .3 + .7 * Math.abs(Math.sin(t / 70 * s.s + s.p)); ctx.fillStyle = '#fff';
       ctx.beginPath(); ctx.arc(s.x + px * 4, s.y + py * 3, s.r, 0, 7); ctx.fill(); }
+    ctx.globalAlpha = 1; ctx.drawImage(moon.c, W * .12 - moon.r * 3 + px * 5, H * .3 - moon.r * 3 + py * 4, moon.r * 6, moon.r * 6);
+    if (conT) {
+      const done = Math.min(1, (performance.now() - conT) / 3800) * con.segs.length, fade = gazing ? 1 : .3;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = 'rgba(205,222,255,.85)'; ctx.lineWidth = 1.4; ctx.shadowColor = '#bcd4ff'; ctx.shadowBlur = 10;
+      con.segs.forEach(([a, b], i) => { const f = Math.min(1, done - i); if (f <= 0) return; ctx.globalAlpha = fade;
+        ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f); ctx.stroke(); });
+      ctx.fillStyle = '#fff'; for (const [x, y] of con.pts) { ctx.globalAlpha = fade * (.6 + .4 * Math.sin(t / 18 + x)); ctx.beginPath(); ctx.arc(x, y, 2.6, 0, 7); ctx.fill(); }
+      ctx.restore();
+    }
     // comet with twin tails
     const cx = W * .74 + px * 6, cy = H * .14 + py * 4, sh = .75 + .25 * Math.sin(t / 50);
     [[ 'rgba(190,220,255,', 0], ['rgba(255,170,210,', .07]].forEach(([col, off]) => {
@@ -475,7 +504,12 @@ footer{text-align:center;color:var(--muted);font-size:12px;letter-spacing:.2em;t
   const shower = (n = 140) => { for (let i = 0; i < n; i++) burst.push(petal(rnd(W * .15, W * .85), H * rnd(.6, .85), true)); if (reduce) frame(); };
   const release = n => { for (let i = 0; i < n; i++) setTimeout(() => lantern(rnd(W * .1, W * .9), H + rnd(10, 80)), i * 220); };
 
+  let gazeT;
+  const endGaze = () => { gazing = false; document.body.classList.remove('gaze'); clearTimeout(gazeT); };
+  const gaze = (ms, cap) => { gazing = true; conT = performance.now(); document.getElementById('gcap').textContent = cap || 'Look up, Naima. The stars wrote your name.';
+    document.body.classList.add('gaze'); clearTimeout(gazeT); gazeT = setTimeout(endGaze, ms); };
   document.addEventListener('click', e => {
+    if (gazing && !e.target.closest('#gate')) { endGaze(); return; }
     if (e.target.closest('button, a, .letter, .panel')) return;
     lantern(e.clientX, e.clientY); if (reduce) frame();
   });
@@ -490,7 +524,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;letter-spacing:.2em;t
     if (now >= start && now < end) {
       $('count').hidden = true;
       $('status').textContent = "It's your day, Naima. The whole sky came out for you.";
-      if (!party) { party = true; setTimeout(() => { shower(200); release(14); launch(12); }, 900); }
+      if (!party) { party = true; setTimeout(() => { gaze(9000, 'お誕生日おめでとう, Naima. Happy birthday.'); shower(200); release(14); launch(12); }, 900); }
       return;
     }
     const d = Math.max(0, target - now), hr = Math.floor(d / 36e5);
@@ -514,6 +548,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;letter-spacing:.2em;t
   });
 
   $('fwbtn').addEventListener('click', () => launch(7));
+  $('gazebtn').addEventListener('click', e => { e.stopPropagation(); gaze(8000); launch(3); });
 
   $('wishform').addEventListener('submit', e => {
     e.preventDefault();
@@ -541,7 +576,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;letter-spacing:.2em;t
   $('open').addEventListener('click', () => {
     document.body.classList.add('go'); $('gate').classList.add('open');
     if (!playing) $('music').click();
-    setTimeout(() => { shower(160); release(8); launch(5); }, 700);
+    setTimeout(() => { gaze(7000); shower(160); release(8); launch(5); }, 500);
   });
 
   // music box: Happy Birthday (public domain), synthesized bells
