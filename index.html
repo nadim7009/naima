@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+<title>Naima's Birthday Sky</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300;1,400&family=Kaisei+Decol:wght@400;700&family=Klee+One:wght@400;600&family=Yomogi&family=Zen+Maru+Gothic:wght@400;500;700&display=swap">
+<style>
+/* Layout: a fixed, painted anime sunset (canvas) with parallax layers; content floats over it in a 680px column of glass panels */
+:root{
+  --night:#0b1033; --ink:#ffffff; --soft:#f3eaff; --muted:#d6cbef;
+  --sakura:#ffb3cf; --sakura-deep:#ee6f9f; --gold:#ffd98f; --ember:#ff9a62;
+  --glass:rgba(12,8,36,.9); --line:rgba(255,255,255,.16);
+  --display:"Kaisei Decol","Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+  --script:"Cormorant Garamond","Times New Roman",serif;
+  --body:"Zen Maru Gothic","Hiragino Maru Gothic ProN",system-ui,sans-serif;
+  --hand:"Klee One","Yomogi","Zen Maru Gothic",cursive;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--night)}
+body{min-height:100%;background:var(--night);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.7;overflow-x:hidden;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));cursor:crosshair}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.bar{position:fixed;left:0;right:0;height:12vh;background:#04030c;z-index:5;pointer-events:none}
+.bar.top{top:0}.bar.bot{bottom:0}
+.go .bar{animation:bar 1.6s .4s cubic-bezier(.7,0,.2,1) forwards}.go .bar.bot{animation-name:barb}
+
+/* intro envelope */
+#gate{position:fixed;inset:0;z-index:30;display:grid;place-items:center;text-align:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));
+  background:radial-gradient(ellipse at 50% 38%,#2c2468 0%,#120d3a 55%,#06051a 100%);transition:opacity 1.3s ease,visibility 1.3s;cursor:auto}
+#gate.open{opacity:0;visibility:hidden}
+#gate .in{display:flex;flex-direction:column;align-items:center;gap:22px}
+#gate small{font-family:var(--display);letter-spacing:.45em;color:var(--sakura);font-size:13px;margin-right:-.45em}
+#gate h2{font-size:clamp(26px,6vw,36px)}
+.env{position:relative;width:270px;max-width:80vw;aspect-ratio:27/17;border:0;padding:0;cursor:pointer;border-radius:8px;
+  background:linear-gradient(160deg,#fff7fa,#f9dbe7);box-shadow:0 30px 70px -20px rgba(0,0,0,.7),0 0 60px rgba(255,170,210,.25);animation:float 3.4s ease-in-out infinite}
+.env::before{content:"";position:absolute;inset:0;border-radius:8px;background:linear-gradient(200deg,#fde6ef,#f3c4d7);clip-path:polygon(0 0,100% 0,50% 58%)}
+.env::after{content:"";position:absolute;inset:0;border-radius:8px;background:linear-gradient(20deg,rgba(0,0,0,.05),transparent 60%);clip-path:polygon(0 100%,50% 50%,100% 100%)}
+.seal{position:absolute;left:50%;top:58%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;z-index:1;display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%,#f58bb3,#c2386e);color:#fff3f8;font-family:var(--display);font-size:22px;box-shadow:0 4px 10px rgba(120,20,60,.4)}
+.env:focus-visible{outline:2px solid var(--gold);outline-offset:8px}
+@keyframes float{50%{transform:translateY(-10px) rotate(-1deg)}}
+.tapme{font-family:var(--hand);color:var(--gold);font-size:20px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.55}}
+
+/* wish lantern + omikuji */
+.wishform{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:24px}
+.wishform input{flex:1 1 220px;min-width:0;max-width:360px;font:inherit;font-family:var(--hand);font-size:19px;color:var(--ink);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:11px 20px}
+.wishform input::placeholder{color:var(--muted)}
+.wishform input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.omi{display:flex;flex-direction:column;align-items:center;gap:22px}
+.slip{position:relative;width:250px;max-width:100%;background:#fffdf5;color:#4b3562;padding:30px 24px 24px;border-radius:3px;text-align:center;transform:rotate(-2deg);
+  box-shadow:0 24px 50px -18px rgba(0,0,0,.7);border-top:14px solid #c8365a}
+.slip::after{content:"";position:absolute;left:12px;right:12px;top:8px;bottom:10px;border:1px solid rgba(200,54,90,.3);pointer-events:none}
+.rank{display:block;font-family:var(--display);font-weight:700;font-size:58px;line-height:1.1;color:#c8365a}
+.rank-en{display:block;font-size:12px;letter-spacing:.25em;text-transform:uppercase;color:#a0708c;margin-top:4px}
+.slip p{margin:14px 0 0;font-family:var(--hand);font-size:18px;line-height:1.7}
+.slip.shake{animation:shake .7s ease-in-out}
+@keyframes shake{20%{transform:rotate(6deg) translateY(-8px)}40%{transform:rotate(-8deg)}60%{transform:rotate(5deg) translateY(-4px)}80%{transform:rotate(-4deg)}}
+@keyframes bar{to{transform:translateY(-100%)}}@keyframes barb{to{transform:translateY(100%)}}
+
+main{position:relative;z-index:1;max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:110px;padding-block:0 80px;pointer-events:none}
+main > *{pointer-events:auto}
+.hero{min-height:94svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding-block:13vh 6vh;position:relative;pointer-events:none}
+.hero > *{pointer-events:auto;position:relative}
+.hero-card{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:560px;padding:34px 22px 28px;border-radius:30px;
+  background:rgba(10,6,32,.82);border:1px solid rgba(255,179,207,.28);box-shadow:0 30px 80px -30px rgba(0,0,0,.8),0 0 60px rgba(255,140,190,.15)}
+.hero{text-shadow:0 2px 4px rgba(5,2,25,.9),0 0 18px rgba(5,2,25,.7)}
+.vert{position:fixed;left:max(3vw,env(safe-area-inset-left,0px));top:22vh;writing-mode:vertical-rl;font-family:var(--display);font-size:clamp(15px,2.2vw,22px);letter-spacing:.5em;color:var(--sakura);opacity:.8;z-index:1;text-shadow:0 0 12px rgba(255,150,200,.6);pointer-events:none}
+.ep{display:flex;align-items:center;gap:14px;font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--soft)}
+.ep::before,.ep::after{content:"";width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--soft))}
+.ep::after{transform:scaleX(-1)}
+.ep b{font-family:var(--display);font-weight:400;letter-spacing:.2em;color:var(--gold)}
+.hb{font-family:var(--script);font-style:italic;font-weight:300;font-size:clamp(34px,7vw,56px);line-height:1;margin-top:8px;text-shadow:0 2px 20px rgba(40,10,80,.8)}
+h1{margin:0;font-family:var(--display);font-weight:700;font-size:clamp(44px,12vw,96px);line-height:1;letter-spacing:.08em;margin-right:-.08em;white-space:nowrap}
+h1 span{display:inline-block;color:#fff;text-shadow:0 3px 0 #c8457d,0 6px 14px rgba(10,4,40,.95),0 0 30px rgba(255,120,180,.9),0 0 60px rgba(255,150,200,.6)}
+.go h1 span{animation:drop 1.2s cubic-bezier(.2,.8,.2,1) both}
+h1 span:nth-child(2){animation-delay:.12s,0s}h1 span:nth-child(3){animation-delay:.24s,0s}h1 span:nth-child(4){animation-delay:.36s,0s}h1 span:nth-child(5){animation-delay:.48s,0s}
+@keyframes drop{from{transform:translateY(-30px) scale(1.2);filter:blur(8px)}}
+@keyframes shine{to{background-position:-300% 0}}
+.kn{font-family:var(--display);font-size:22px;letter-spacing:.8em;margin-right:-.8em;color:var(--soft);text-shadow:0 0 14px rgba(200,170,255,.7)}
+.date{font-size:13px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase}
+
+.count{display:flex;align-items:flex-start;gap:6px;margin-top:20px;font-family:var(--display)}
+.count .u{display:flex;flex-direction:column;align-items:center;min-width:72px}
+.count b{font-size:clamp(38px,9vw,54px);font-weight:400;line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 0 22px rgba(255,200,150,.5)}
+.count small{font-family:var(--body);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.count i{font-style:normal;font-size:38px;line-height:1;color:var(--sakura);opacity:.7}
+.status{font-family:var(--hand);font-size:clamp(18px,4.5vw,22px);color:var(--gold);text-shadow:0 0 12px rgba(255,200,120,.5);max-width:30ch}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.btn{font:inherit;font-size:15px;color:var(--ink);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:11px 24px;cursor:pointer;backdrop-filter:blur(8px);transition:background .2s,transform .2s}
+.btn:hover{background:rgba(255,255,255,.2);transform:translateY(-1px)}
+.btn[aria-pressed="true"]{background:rgba(255,179,207,.28);border-color:var(--sakura)}
+.btn:focus-visible,.candle:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.tip{font-size:13px;color:var(--muted);letter-spacing:.05em}
+
+.panel{background:var(--glass);border:1px solid var(--line);border-radius:26px;padding:40px 28px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 30px 80px -30px rgba(0,0,0,.6)}
+.eyebrow{display:block;text-align:center;font-family:var(--display);font-size:14px;letter-spacing:.4em;color:var(--sakura);margin-right:-.4em}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,6.5vw,38px);line-height:1.25;margin:6px 0 0;text-align:center;text-wrap:balance}
+.sub{text-align:center;color:var(--soft);margin:6px 0 0}
+
+/* cake */
+.cake-wrap{display:flex;flex-direction:column;align-items:center;gap:22px}
+.cake{position:relative;width:260px;max-width:100%;height:240px;margin-top:20px}
+.cake::before{content:"";position:absolute;left:50%;top:-20px;width:300px;height:200px;margin-left:-150px;background:radial-gradient(closest-side,rgba(255,200,120,.35),transparent);transition:opacity .8s;max-width:none}
+.cake.dark::before{opacity:0}
+.tier{position:absolute;left:50%;transform:translateX(-50%);border-radius:16px 16px 10px 10px;overflow:hidden}
+.t1{bottom:0;width:240px;height:92px;background:linear-gradient(#fbe1ee,#efb2cd)}
+.t2{bottom:86px;width:176px;height:72px;background:linear-gradient(#fffafd,#fad3e3)}
+.t1::after,.t2::after{content:"";position:absolute;left:0;right:0;bottom:22px;height:6px;background:repeating-linear-gradient(90deg,#fff 0 8px,transparent 8px 16px);opacity:.7}
+.drip{position:absolute;top:0;left:0;right:0;height:20px;background:radial-gradient(circle at 10px 20px,transparent 9px,#fff 10px) 0 0/20px 28px repeat-x}
+.t1 .drip{background:radial-gradient(circle at 10px 20px,transparent 9px,#ffd1e3 10px) 0 0/20px 28px repeat-x}
+.berry{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--sakura-deep);box-shadow:inset -3px -3px 0 rgba(0,0,0,.15),0 0 8px rgba(238,111,159,.6)}
+.plate{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);width:280px;max-width:100%;height:18px;border-radius:50%;background:rgba(255,255,255,.22)}
+.candles{position:absolute;bottom:158px;left:50%;transform:translateX(-50%);display:flex;gap:28px;z-index:1}
+.candle{position:relative;width:14px;height:54px;border:0;padding:0;border-radius:4px;cursor:pointer;background:repeating-linear-gradient(-45deg,#fff 0 6px,#c9b2ff 6px 12px)}
+.flame{position:absolute;left:50%;bottom:100%;width:14px;height:26px;margin-left:-7px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+  background:radial-gradient(ellipse at 50% 70%,#fff 0 20%,var(--gold) 42%,var(--ember) 75%,transparent 76%);filter:drop-shadow(0 0 12px #ffcf7a);transform-origin:50% 100%;animation:flick 1.1s ease-in-out infinite alternate}
+.candle.out .flame{animation:none;opacity:0;transform:scale(.2);transition:.35s}
+.candle.out::after{content:"";position:absolute;left:50%;bottom:100%;width:6px;height:30px;margin-left:-3px;border-radius:50%;background:linear-gradient(transparent,rgba(255,255,255,.5));animation:smoke 1.4s ease-out forwards}
+@keyframes flick{from{transform:scale(1) rotate(-3deg)}to{transform:scale(1.08,.92) rotate(3deg)}}
+@keyframes smoke{from{opacity:.8}to{opacity:0;transform:translateY(-34px) scaleX(2)}}
+.hint{font-family:var(--hand);color:var(--gold);font-size:20px;text-align:center;min-height:1.7em}
+
+/* letter */
+.letter{position:relative;background:#fffaf7 repeating-linear-gradient(transparent 0 34px,rgba(200,140,180,.18) 34px 35px);background-position:0 18px;color:#4b3562;border-radius:4px;padding:46px 34px 36px;box-shadow:0 40px 80px -24px rgba(5,2,30,.75);transform:rotate(-1.2deg);cursor:auto}
+.letter::before,.letter::after{content:"";position:absolute;top:-14px;width:110px;height:28px;background:rgba(255,179,207,.8)}
+.letter::before{left:18px;transform:rotate(-6deg)}
+.letter::after{right:18px;transform:rotate(5deg);background:rgba(201,178,255,.75)}
+.letter p{margin:0 0 16px;font-family:var(--hand);font-weight:600;font-size:19px;line-height:1.85;max-width:62ch;color:#2f1e44}
+.letter .to{font-size:24px;color:#c0507f}
+.letter .sign{text-align:right;margin:24px 0 0;font-size:22px;color:#c0507f}
+.stamp{position:absolute;right:22px;top:22px;font-family:var(--display);font-size:12px;color:#c0507f;border:1.5px dashed #e9a3c0;border-radius:50%;width:62px;height:62px;display:grid;place-items:center;transform:rotate(12deg);line-height:1.2;text-align:center}
+
+/* four wishes */
+.wishes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:26px}
+.wc{position:relative;overflow:hidden;min-width:0;padding:24px 20px 22px;border-radius:22px;color:#fff;border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 20px 40px -18px rgba(0,0,0,.8);transition:transform .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s}
+.wc:hover{transform:translateY(-6px) rotate(-1deg);box-shadow:0 26px 50px -16px rgba(0,0,0,.8),0 0 40px rgba(255,160,210,.35)}
+.wc::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.2) 50%,transparent 60%) 0 0/260% 100%;animation:sweep 6s ease-in-out infinite;pointer-events:none}
+.w2::after{animation-delay:1.5s}.w3::after{animation-delay:3s}.w4::after{animation-delay:4.5s}
+@keyframes sweep{0%,60%{background-position:130% 0}100%{background-position:-130% 0}}
+.w1{background:linear-gradient(160deg,#3a2477,#9b4a8f)}
+.w2{background:linear-gradient(160deg,#4a1f4f,#c25a5e)}
+.w3{background:linear-gradient(160deg,#16275f,#4a64b8)}
+.w4{background:linear-gradient(160deg,#241a55,#7a4fb0)}
+.wc svg{display:block;width:68px;height:68px;margin-bottom:14px;filter:drop-shadow(0 0 14px rgba(255,220,235,.75));animation:bob 4s ease-in-out infinite}
+.w2 svg{animation-delay:1s}.w3 svg{animation-delay:2s}.w4 svg{animation-delay:3s}
+@keyframes bob{50%{transform:translateY(-5px)}}
+.wc .jp{position:absolute;right:16px;top:14px;font-family:var(--display);font-size:42px;line-height:1;color:rgba(255,255,255,.22)}
+.wc h3{margin:0 0 6px;font-family:var(--display);font-weight:700;font-size:20px;line-height:1.35;text-shadow:0 2px 6px rgba(0,0,0,.4)}
+.wc p{margin:0;color:#fbf4ff;font-size:15px;line-height:1.6;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.end footer{margin-top:14px}
+
+.end{text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.tsuzuku{font-family:var(--display);font-weight:700;font-size:clamp(60px,16vw,110px);line-height:1.1;color:var(--ink);text-shadow:0 0 30px rgba(255,170,210,.7),0 0 4px #fff}
+.end p{margin:0;color:var(--soft)}
+footer{text-align:center;color:var(--muted);font-size:12px;letter-spacing:.2em;text-transform:uppercase}
+
+@media (prefers-reduced-motion:reduce){.wc::after,.wc svg{animation:none}}
+@media (max-width:520px){.wishes{grid-template-columns:1fr}.hero-card{padding:28px 16px 24px}.letter{padding:42px 22px 28px}.panel{padding:34px 18px}.vert{display:none}}
+@media (prefers-reduced-motion:reduce){.bar{display:none}h1 span,.flame{animation:none}}
+</style>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="bar top" aria-hidden="true"></div><div class="bar bot" aria-hidden="true"></div>
+<div class="vert" aria-hidden="true">君が生まれた日</div>
+<div id="gate">
+  <div class="in">
+    <small>11月4日</small>
+    <h2>A letter came for Naima</h2>
+    <button class="env" id="open" aria-label="Open the letter"><span class="seal">ナ</span></button>
+    <span class="tapme">Tap the envelope to open</span>
+  </div>
+</div>
+
+<main>
+  <section class="hero"><div class="hero-card">
+    <div class="ep"><b>特別編</b>&nbsp;Special episode</div>
+    <div class="hb">Happy Birthday,</div>
+    <h1 aria-label="Naima"><span>N</span><span>A</span><span>I</span><span>M</span><span>A</span></h1>
+    <div class="kn">ナイマ</div>
+    <div class="date">The day you were born &nbsp;·&nbsp; 4 November &nbsp;·&nbsp; 11月4日</div>
+    <div class="count" id="count" aria-live="off">
+      <div class="u"><b id="h">00</b><small>hours</small></div><i>:</i>
+      <div class="u"><b id="m">00</b><small>min</small></div><i>:</i>
+      <div class="u"><b id="s">00</b><small>sec</small></div>
+    </div>
+    <div class="status" id="status">The sky is getting ready for you</div>
+    <div class="row"><button class="btn" id="music" aria-pressed="false">♪ Play the music box</button><button class="btn" id="fwbtn">✦ Light the fireworks</button></div>
+    <div class="tip">Tap anywhere in the sky to send up a lantern</div>
+  </div></section>
+
+  <section class="panel cake-wrap">
+    <div>
+      <span class="eyebrow">願い事</span>
+      <h2>Make a wish first</h2>
+      <p class="sub">Close your eyes, then tap each candle.</p>
+    </div>
+    <div class="cake" id="cake">
+      <div class="candles">
+        <button class="candle" aria-label="Blow out candle 1"><span class="flame"></span></button>
+        <button class="candle" aria-label="Blow out candle 2"><span class="flame"></span></button>
+        <button class="candle" aria-label="Blow out candle 3"><span class="flame"></span></button>
+      </div>
+      <div class="tier t2"><div class="drip"></div><span class="berry" style="left:30px;top:30px"></span><span class="berry" style="left:81px;top:36px"></span><span class="berry" style="right:30px;top:30px"></span></div>
+      <div class="tier t1"><div class="drip"></div><span class="berry" style="left:40px;top:42px"></span><span class="berry" style="left:113px;top:48px"></span><span class="berry" style="right:40px;top:42px"></span></div>
+      <div class="plate"></div>
+    </div>
+    <div class="hint" id="hint" aria-live="polite"></div>
+    <button class="btn" id="relight" hidden>Light them again</button>
+  </section>
+
+  <section>
+    <article class="letter">
+      <div class="stamp">11.04<br>ナイマ</div>
+      <p class="to">Dear Naima,</p>
+      <p>Thank you for being a part of my life.</p>
+      <p>From the first day I saw you in Kicchukkhon until today, you have been an amazing human being. You are one of the few people who are truly close to me.</p>
+      <p>When I met you, I was going through some issues. I still have a few, but it's okay. A lot has happened between us since then, and there were some really good moments too. I keep those close.</p>
+      <p>Keep shining in life. Lots of dua and happiness for you, today and always.</p>
+      <p>Wishing you a very happy life, and a very happy birthday.</p>
+      <p class="sign">Nadim</p>
+    </article>
+  </section>
+
+  <section class="panel">
+    <span class="eyebrow">灯籠</span>
+    <h2>Send a wish into the sky</h2>
+    <p class="sub">Write what you want this year to bring. It floats up as a lantern.</p>
+    <form class="wishform" id="wishform">
+      <input id="wishtext" maxlength="40" placeholder="I wish..." autocomplete="off" aria-label="Your wish">
+      <button class="btn" type="submit">Send it up</button>
+    </form>
+    <div class="hint" id="wishhint" aria-live="polite"></div>
+  </section>
+
+  <section class="panel omi">
+    <div>
+      <span class="eyebrow">おみくじ</span>
+      <h2>Draw your birthday fortune</h2>
+      <p class="sub">Every slip at this shrine is a lucky one today.</p>
+    </div>
+    <div class="slip" id="slip" aria-live="polite">
+      <span class="rank" id="rank">大吉</span><span class="rank-en" id="ranken">Great blessing</span>
+      <p id="fortune">This year, the people who matter will show up for you without being asked.</p>
+    </div>
+    <button class="btn" id="draw">Draw another fortune</button>
+  </section>
+
+  <section class="panel">
+    <span class="eyebrow">四つの願い</span>
+    <h2>Four wishes for your year</h2>
+    <div class="wishes">
+      <div class="wc w1"><span class="jp">花</span>
+        <svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(32 32)" fill="#ffb3cf"><ellipse rx="9" ry="14" cy="-13"/><ellipse rx="9" ry="14" cy="-13" transform="rotate(72)"/><ellipse rx="9" ry="14" cy="-13" transform="rotate(144)"/><ellipse rx="9" ry="14" cy="-13" transform="rotate(216)"/><ellipse rx="9" ry="14" cy="-13" transform="rotate(288)"/></g><circle cx="32" cy="32" r="5" fill="#ffe08a"/></svg>
+        <h3>The first blossom</h3><p>A year that opens slowly and softly, like sakura in early spring.</p></div>
+      <div class="wc w2"><span class="jp">灯</span>
+        <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="22" y="8" width="20" height="5" rx="2" fill="#8a4436"/><path d="M17 13h30l-4 35H21z" fill="#ffb067"/><path d="M24 13h16l-2 35H26z" fill="#ffd08f"/><rect x="22" y="48" width="20" height="5" rx="2" fill="#8a4436"/><path d="M32 53v8" stroke="#ffd98f" stroke-width="2"/><circle cx="32" cy="31" r="6" fill="#fff4d6"/></svg>
+        <h3>The ones who stay</h3><p>Friends who would cross the whole map just to find you.</p></div>
+      <div class="wc w3"><span class="jp">星</span>
+        <svg viewBox="0 0 64 64" aria-hidden="true"><polygon points="32,5 39,24 59,24 43,37 49,58 32,46 15,58 21,37 5,24 25,24" fill="#fff1bd"/><circle cx="55" cy="9" r="2" fill="#fff"/><circle cx="9" cy="52" r="1.6" fill="#fff"/></svg>
+        <h3>Catching the dream</h3><p>Something you chase hard this year, and actually catch.</p></div>
+      <div class="wc w4"><span class="jp">月</span>
+        <svg viewBox="0 0 64 64" aria-hidden="true"><mask id="crescent"><rect width="64" height="64" fill="#fff"/><circle cx="43" cy="22" r="21" fill="#000"/></mask><circle cx="30" cy="34" r="24" fill="#ffe7a8" mask="url(#crescent)"/><circle cx="52" cy="44" r="2" fill="#fff"/></svg>
+        <h3>There is no finale</h3><p>Just season two, and many more seasons after that.</p></div>
+    </div>
+  </section>
+
+  <section class="panel end">
+    <div class="tsuzuku">つづく</div>
+    <p>To be continued. Many more birthdays to go.</p>
+    <footer>Made under a sky full of petals, for Naima</footer>
+  </section>
+</main>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cv = document.getElementById('sky'), ctx = cv.getContext('2d');
+  const M = 40; // parallax margin around each pre-rendered layer
+  let W, H, D, layers = {}, stars = [], petals = [], burst = [], lanterns = [], motes = [], shoots = [];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const seeded = s => () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const mk = () => { const c = document.createElement('canvas'); c.width = (W + 2 * M) * D; c.height = (H + 2 * M) * D;
+    const x = c.getContext('2d'); x.setTransform(D, 0, 0, D, M * D, M * D); return [c, x]; };
+
+  function paintSky() {
+    const [c, x] = mk();
+    const g = x.createLinearGradient(0, -M, 0, H + M);
+    g.addColorStop(0, '#070a26'); g.addColorStop(.35, '#1a2160'); g.addColorStop(.58, '#4a3388');
+    g.addColorStop(.72, '#b4589a'); g.addColorStop(.82, '#f08a86'); g.addColorStop(.92, '#ffbf92'); g.addColorStop(1, '#ffd9ad');
+    x.fillStyle = g; x.fillRect(-M, -M, W + 2 * M, H + 2 * M);
+    const r = x.createRadialGradient(W * .62, H * .76, 0, W * .62, H * .76, Math.max(W, H) * .6);
+    r.addColorStop(0, 'rgba(255,236,200,.4)'); r.addColorStop(1, 'rgba(255,200,180,0)');
+    x.fillStyle = r; x.fillRect(-M, -M, W + 2 * M, H + 2 * M);
+    const v = x.createRadialGradient(W / 2, H * .45, Math.min(W, H) * .3, W / 2, H * .45, Math.max(W, H) * .85);
+    v.addColorStop(0, 'rgba(5,3,25,0)'); v.addColorStop(1, 'rgba(5,3,25,.55)');
+    x.fillStyle = v; x.fillRect(-M, -M, W + 2 * M, H + 2 * M);
+    return c;
+  }
+  function paintClouds() {
+    const [c, x] = mk(), R = seeded(7), S = Math.min(W, H) / 700;
+    const cloud = (cx, cy, w, h, n) => {
+      const t = document.createElement('canvas'); t.width = (w + 200) * D; t.height = (h + 200) * D;
+      const tx = t.getContext('2d'); tx.scale(D, D);
+      tx.fillStyle = '#fff';
+      for (let i = 0; i < n; i++) { const px = 100 + R() * w, py = 100 + h * (.35 + .65 * R()) * (1 - Math.abs(px - 100 - w / 2) / w), rr = (14 + R() * 46) * S * (1.2 - Math.abs(px - 100 - w / 2) / w);
+        tx.beginPath(); tx.arc(px, Math.max(py, 100 + h * .15), rr, 0, 7); tx.fill(); }
+      tx.globalCompositeOperation = 'source-atop';
+      const g = tx.createLinearGradient(0, 60, 0, h + 140);
+      g.addColorStop(0, '#fff4fb'); g.addColorStop(.45, '#ffc6dc'); g.addColorStop(.8, '#ff9f9a'); g.addColorStop(1, '#c86a9a');
+      tx.fillStyle = g; tx.fillRect(0, 0, w + 200, h + 200);
+      x.save(); x.globalAlpha = .92; x.filter = 'blur(5px)'; x.drawImage(t, cx - w / 2 - 100, cy - h - 100, w + 200, h + 200); x.restore();
+    };
+    cloud(W * .64, H * .66, 380 * S, 230 * S, 90);
+    cloud(W * .2, H * .62, 300 * S, 110 * S, 50);
+    cloud(W * .95, H * .55, 260 * S, 120 * S, 45);
+    x.globalAlpha = .35; x.fillStyle = '#ffd6e6';
+    for (let i = 0; i < 5; i++) { const y = H * (.3 + i * .06); x.beginPath(); x.ellipse(W * R(), y, 160 * S + R() * 120, 5 + R() * 6, 0, 0, 7); x.fill(); }
+    return c;
+  }
+  function ridge(x, base, amp, color, seed, lights) {
+    const R = seeded(seed), ph = [R() * 6, R() * 6, R() * 6];
+    const y = px => base - amp * (.5 * Math.sin(px / 230 + ph[0]) + .3 * Math.sin(px / 97 + ph[1]) + .2 * Math.sin(px / 41 + ph[2]));
+    x.beginPath(); x.moveTo(-M, H + M);
+    for (let px = -M; px <= W + M; px += 6) x.lineTo(px, y(px));
+    x.lineTo(W + M, H + M); x.closePath(); x.fillStyle = color; x.fill();
+    if (lights) { x.shadowColor = '#ffcf8a'; x.shadowBlur = 6; x.fillStyle = '#ffe2b0';
+      for (let i = 0; i < W / 9; i++) { const px = R() * W, py = y(px) + 8 + R() * (H - y(px)) * .5; if (py < H) { x.globalAlpha = .4 + R() * .6; x.fillRect(px, py, 1.6, 1.6); } }
+      x.globalAlpha = 1; x.shadowBlur = 0; }
+  }
+  function paintFar() { const [c, x] = mk(); ridge(x, H * .8, 70, 'rgba(120,80,150,.85)', 3); return c; }
+  function paintNear() { const [c, x] = mk(); ridge(x, H * .88, 50, '#3a2659', 11, true); return c; }
+  function paintFg() {
+    const [c, x] = mk(), R = seeded(42), S = Math.min(1.3, Math.max(.6, W / 1100));
+    const hx = W * (W < 600 ? .12 : .16), hy = H * .9;
+    x.fillStyle = '#170f2c'; x.beginPath(); x.moveTo(-M, H + M); x.lineTo(-M, hy - 20 * S);
+    x.quadraticCurveTo(hx, hy - 70 * S, hx + 420 * S, hy + 10); x.quadraticCurveTo(W * .7, H * .98, W + M, H * .97); x.lineTo(W + M, H + M); x.fill();
+    const ends = [];
+    const br = (px, py, len, ang, w, d) => {
+      const ex = px + Math.cos(ang) * len, ey = py + Math.sin(ang) * len;
+      x.strokeStyle = '#2b1a46'; x.lineWidth = w; x.lineCap = 'round';
+      x.beginPath(); x.moveTo(px, py); x.quadraticCurveTo((px + ex) / 2 + (R() - .5) * len * .3, (py + ey) / 2, ex, ey); x.stroke();
+      if (d === 0) { ends.push([ex, ey]); return; }
+      const n = d > 4 ? 2 : 2 + (R() < .5);
+      for (let i = 0; i < n; i++) br(ex, ey, len * (.66 + R() * .16), ang + (R() - .5) * 1.1 + (i - (n - 1) / 2) * .35, w * .68, d - 1);
+      if (d < 3) ends.push([ex, ey]);
+    };
+    br(hx + 40 * S, hy - 52 * S, 110 * S, -Math.PI / 2 + .12, 22 * S, 7);
+    const pinks = ['#ffb3cf', '#ffc7db', '#f593bb', '#ffd9e7', '#e97aa9'];
+    x.shadowColor = 'rgba(255,150,200,.7)'; x.shadowBlur = 18 * S;
+    for (const [ex, ey] of ends) for (let i = 0; i < 8; i++) {
+      x.fillStyle = pinks[Math.floor(R() * 5)]; x.globalAlpha = .75 + R() * .25;
+      x.beginPath(); x.arc(ex + (R() - .5) * 26 * S, ey + (R() - .5) * 22 * S, (5 + R() * 10) * S, 0, 7); x.fill();
+    }
+    x.globalAlpha = 1; x.shadowBlur = 0;
+    return c;
+  }
+  function size() {
+    D = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight;
+    cv.width = W * D; cv.height = H * D; ctx.setTransform(D, 0, 0, D, 0, 0);
+    layers = { sky: paintSky(), clouds: paintClouds(), far: paintFar(), near: paintNear(), fg: paintFg() };
+    stars = Array.from({length: Math.round(W * H / 3800)}, () => ({x: rnd(-M, W + M), y: rnd(-M, H * .55), r: rnd(.3, 1.5), p: rnd(0, 6), s: rnd(.5, 2)}));
+    motes = Array.from({length: 26}, () => ({x: rnd(0, W), y: rnd(H * .5, H), r: rnd(1, 2.4), v: rnd(.15, .5), p: rnd(0, 6)}));
+  }
+  const petal = (x, y, fast) => ({x, y, s: rnd(6, 13), vy: fast ? rnd(-7, -2) : rnd(.4, 1.2), vx: fast ? rnd(-4, 4) : rnd(-.2, .9),
+    a: rnd(0, 6.28), va: rnd(-.04, .04), sw: rnd(0, 6.28), g: fast ? .12 : 0, life: fast ? 170 : 1e9,
+    c: ['#ffb3cf', '#ffc7db', '#f593bb', '#ffe3ee', '#ffd98f'][Math.floor(rnd(0, 5))]});
+  size(); addEventListener('resize', () => { clearTimeout(size.t); size.t = setTimeout(size, 150); });
+  for (let i = 0; i < 44; i++) petals.push(petal(rnd(0, W), rnd(-H, H), false));
+
+  let px = 0, py = 0, tx = 0, ty = 0;
+  let sparks = [];
+  addEventListener('pointermove', e => { tx = e.clientX / W * 2 - 1; ty = e.clientY / H * 2 - 1;
+    if (sparks.length < 80) sparks.push({x: e.clientX + rnd(-6, 6), y: e.clientY + rnd(-6, 6), l: 1, r: rnd(1.5, 3.5), c: Math.random() < .5 ? '#ffe9a8' : '#ffc2dc'}); });
+  function drawSparks() {
+    sparks = sparks.filter(s => (s.l -= .025) > 0);
+    for (const s of sparks) { s.y += .4; ctx.globalAlpha = s.l; ctx.fillStyle = s.c; ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.l * 3);
+      const r = s.r * (1 + (1 - s.l)); ctx.beginPath();
+      for (let i = 0; i < 4; i++) { ctx.lineTo(0, -r * 2); ctx.lineTo(r * .35, -r * .35); ctx.rotate(Math.PI / 2); }
+      ctx.fill(); ctx.restore(); }
+  }
+  const layer = (c, depth) => {
+    const s = Math.min(scrollY / H, 1);
+    ctx.drawImage(c, -M + px * depth * M * .4, -M + py * depth * M * .3 + s * depth * M * .6, W + 2 * M, H + 2 * M);
+  };
+  function drawPetal(p) {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.scale(1, .6 + .4 * Math.sin(p.sw * 2)); ctx.fillStyle = p.c; ctx.globalAlpha = .9;
+    ctx.beginPath(); ctx.moveTo(0, -p.s / 2); ctx.bezierCurveTo(p.s / 2, -p.s / 2, p.s / 2, p.s / 3, 0, p.s / 2);
+    ctx.bezierCurveTo(-p.s / 2, p.s / 3, -p.s / 2, -p.s / 2, 0, -p.s / 2); ctx.fill(); ctx.restore();
+  }
+  function drawLantern(l) {
+    const fade = Math.min(1, (l.y + 40) / (H * .35));
+    ctx.save(); ctx.globalAlpha = fade; ctx.translate(l.x + Math.sin(l.sw) * 6, l.y);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, l.s * 3.2);
+    g.addColorStop(0, 'rgba(255,200,120,.55)'); g.addColorStop(1, 'rgba(255,160,100,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, l.s * 3.2, 0, 7); ctx.fill();
+    const b = ctx.createLinearGradient(0, -l.s, 0, l.s);
+    b.addColorStop(0, '#ffe6b0'); b.addColorStop(1, '#ff8a52');
+    ctx.fillStyle = b; ctx.beginPath(); ctx.moveTo(-l.s * .55, -l.s); ctx.lineTo(l.s * .55, -l.s); ctx.lineTo(l.s * .7, l.s * .8);
+    ctx.quadraticCurveTo(0, l.s * 1.1, -l.s * .7, l.s * .8); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#fff6d8'; ctx.beginPath(); ctx.arc(0, l.s * .55, l.s * .18, 0, 7); ctx.fill();
+    if (l.text) { ctx.font = '17px Yomogi, "Zen Maru Gothic", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff4e2';
+      ctx.shadowColor = 'rgba(10,4,40,.9)'; ctx.shadowBlur = 6; ctx.fillText(l.text, 0, l.s * 2.4); ctx.shadowBlur = 0; }
+    ctx.restore();
+  }
+  const lantern = (x, y, text) => lanterns.push({x, y, text, s: text ? 20 : rnd(9, 15), v: text ? .55 : rnd(.5, 1), sw: rnd(0, 6)});
+
+  // fireworks (hanabi) that burst behind the hills
+  let rockets = [], fwp = [];
+  const FWC = ['#ffb3cf', '#ffd98f', '#c9b2ff', '#ffffff', '#ff8fb8', '#9fe0ff'];
+  const launch = n => { for (let i = 0; i < n; i++) setTimeout(() => rockets.push({x: rnd(W * .12, W * .88), y: H * .9, ty: rnd(H * .12, H * .42), v: rnd(8, 11)}), i * 380); };
+  function drawFw() {
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    rockets = rockets.filter(r => {
+      r.y -= r.v; r.v *= .985;
+      ctx.globalAlpha = .9; ctx.fillStyle = '#ffe9c0'; ctx.fillRect(r.x - 1, r.y, 2, 8);
+      if (r.y > r.ty) return true;
+      const c = FWC[Math.floor(rnd(0, FWC.length))], c2 = FWC[Math.floor(rnd(0, FWC.length))], n = 80;
+      for (let i = 0; i < n; i++) { const a = i / n * 6.283 + rnd(-.05, .05), sp = rnd(2, 4.6);
+        fwp.push({x: r.x, y: r.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, l: 1, d: rnd(.008, .014), c: i % 3 ? c : c2}); }
+      return false;
+    });
+    fwp = fwp.filter(p => (p.l -= p.d) > 0);
+    for (const p of fwp) { p.vx *= .975; p.vy = p.vy * .975 + .035; p.x += p.vx; p.y += p.vy;
+      ctx.globalAlpha = p.l; ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, 1.4 + p.l * 1.4, 0, 7); ctx.fill(); }
+    ctx.restore();
+  }
+
+  let t = 0;
+  function frame() {
+    t++; px += (tx - px) * .04; py += (ty - py) * .04;
+    ctx.globalAlpha = 1; layer(layers.sky, .1);
+    for (const s of stars) { ctx.globalAlpha = .3 + .7 * Math.abs(Math.sin(t / 70 * s.s + s.p)); ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(s.x + px * 4, s.y + py * 3, s.r, 0, 7); ctx.fill(); }
+    // comet with twin tails
+    const cx = W * .74 + px * 6, cy = H * .14 + py * 4, sh = .75 + .25 * Math.sin(t / 50);
+    [[ 'rgba(190,220,255,', 0], ['rgba(255,170,210,', .07]].forEach(([col, off]) => {
+      const ang = Math.PI * .83 + off, ex = cx + Math.cos(ang) * W * .45, ey = cy - Math.sin(ang) * -H * .25;
+      const g = ctx.createLinearGradient(cx, cy, ex, ey); g.addColorStop(0, col + (.9 * sh) + ')'); g.addColorStop(1, col + '0)');
+      ctx.globalAlpha = 1; ctx.strokeStyle = g; ctx.lineCap = 'round';
+      for (const w of [9, 4, 1.5]) { ctx.lineWidth = w; ctx.globalAlpha = w > 5 ? .25 : .8; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey); ctx.stroke(); }
+    });
+    ctx.globalAlpha = 1; const hg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 16); hg.addColorStop(0, '#fff'); hg.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(cx, cy, 16, 0, 7); ctx.fill();
+    if (Math.random() < .006) shoots.push({x: rnd(W * .1, W), y: rnd(0, H * .3), l: 1});
+    shoots = shoots.filter(s => (s.l -= .02) > 0);
+    for (const s of shoots) { s.x -= 9; s.y += 4; const g = ctx.createLinearGradient(s.x, s.y, s.x + 90, s.y - 40);
+      g.addColorStop(0, `rgba(255,255,255,${s.l})`); g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.strokeStyle = g; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x + 90, s.y - 40); ctx.stroke(); }
+    layer(layers.clouds, .35); drawFw(); layer(layers.far, .55); layer(layers.near, .75);
+    lanterns = lanterns.filter(l => l.y > -60);
+    for (const l of lanterns) { l.y -= l.v; l.sw += .02; drawLantern(l); }
+    layer(layers.fg, 1);
+    for (const m of motes) { m.y -= m.v; m.p += .03; if (m.y < H * .4) { m.y = H + 10; m.x = rnd(0, W); }
+      ctx.globalAlpha = .4 + .5 * Math.sin(m.p); ctx.fillStyle = '#ffe9b8'; ctx.shadowColor = '#ffd27a'; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(m.x + Math.sin(m.p) * 8, m.y, m.r, 0, 7); ctx.fill(); }
+    ctx.shadowBlur = 0;
+    for (const p of petals) { p.sw += .02; p.x += p.vx + Math.sin(p.sw) * .6; p.y += p.vy; p.a += p.va;
+      if (p.y > H + 20 || p.x > W + 30) { p.y = -20; p.x = rnd(-50, W); } drawPetal(p); }
+    burst = burst.filter(p => p.life-- > 0);
+    for (const p of burst) { p.vy += p.g; p.x += p.vx; p.y += p.vy; p.a += p.va * 4; drawPetal(p); }
+    drawSparks();
+    ctx.globalAlpha = 1;
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  frame();
+  const shower = (n = 140) => { for (let i = 0; i < n; i++) burst.push(petal(rnd(W * .15, W * .85), H * rnd(.6, .85), true)); if (reduce) frame(); };
+  const release = n => { for (let i = 0; i < n; i++) setTimeout(() => lantern(rnd(W * .1, W * .9), H + rnd(10, 80)), i * 220); };
+
+  document.addEventListener('click', e => {
+    if (e.target.closest('button, a, .letter, .panel')) return;
+    lantern(e.clientX, e.clientY); if (reduce) frame();
+  });
+
+  // countdown to 00:00, 4 November, viewer's local time
+  const now0 = new Date(), yr = now0.getFullYear(), start = new Date(yr, 10, 4), end = new Date(yr, 10, 5);
+  const target = now0 >= end ? new Date(yr + 1, 10, 4) : start;
+  const $ = id => document.getElementById(id), pad = n => String(n).padStart(2, '0');
+  let party = false;
+  function tick() {
+    const now = new Date();
+    if (now >= start && now < end) {
+      $('count').hidden = true;
+      $('status').textContent = "It's your day, Naima. The whole sky came out for you.";
+      if (!party) { party = true; setTimeout(() => { shower(200); release(14); launch(12); }, 900); }
+      return;
+    }
+    const d = Math.max(0, target - now), hr = Math.floor(d / 36e5);
+    $('h').textContent = pad(hr); $('m').textContent = pad(Math.floor(d / 6e4) % 60); $('s').textContent = pad(Math.floor(d / 1e3) % 60);
+    $('status').textContent = hr < 1 ? 'Less than an hour. Hold on to your wish.' : hr < 24 ? 'Almost there. The lanterns are waiting.' : 'The sky is getting ready for you';
+  }
+  tick(); setInterval(tick, 1000);
+
+  // candles
+  const candles = [...document.querySelectorAll('.candle')];
+  candles.forEach(c => c.addEventListener('click', () => {
+    if (c.classList.contains('out')) return;
+    c.classList.add('out'); c.setAttribute('aria-label', 'Candle blown out');
+    const left = candles.filter(x => !x.classList.contains('out')).length;
+    $('hint').textContent = left ? `${left} more to go` : 'Your wish is on its way to the stars.';
+    if (!left) { $('cake').classList.add('dark'); shower(200); release(10); launch(8); $('relight').hidden = false; }
+  }));
+  $('relight').addEventListener('click', () => {
+    candles.forEach((c, i) => { c.classList.remove('out'); c.setAttribute('aria-label', `Blow out candle ${i + 1}`); });
+    $('cake').classList.remove('dark'); $('hint').textContent = ''; $('relight').hidden = true;
+  });
+
+  $('fwbtn').addEventListener('click', () => launch(7));
+
+  $('wishform').addEventListener('submit', e => {
+    e.preventDefault();
+    const txt = $('wishtext').value.trim() || 'Happy birthday, Naima';
+    lantern(rnd(W * .3, W * .7), H + 30, txt); launch(2);
+    $('wishtext').value = ''; $('wishhint').textContent = 'Your lantern is rising. Look up at the sky.';
+  });
+
+  const fortunes = [
+    ['大吉', 'Great blessing', 'This year, the people who matter will show up for you without being asked.'],
+    ['大吉', 'Great blessing', 'A door you have been knocking on will open. Walk in like you belong there.'],
+    ['中吉', 'Middle blessing', 'Small happy things will pile up so quietly that you only notice when you look back.'],
+    ['吉', 'Blessing', 'Someone is very proud of you right now. You will find out who.'],
+    ['大吉', 'Great blessing', 'Your laugh will be part of someone\'s favourite memory this year.'],
+    ['末吉', 'Future blessing', 'The best part of this year arrives a little late. It is worth the wait.'],
+    ['大吉', 'Great blessing', 'Rest when you are tired. The good things will wait for you, and so will your people.']
+  ];
+  let fi = 0;
+  $('draw').addEventListener('click', () => {
+    const s = $('slip'); s.classList.remove('shake'); void s.offsetWidth; s.classList.add('shake');
+    let n; do n = Math.floor(Math.random() * fortunes.length); while (n === fi); fi = n;
+    setTimeout(() => { const [r, en, f] = fortunes[n]; $('rank').textContent = r; $('ranken').textContent = en; $('fortune').textContent = f; }, 350);
+  });
+
+  $('open').addEventListener('click', () => {
+    document.body.classList.add('go'); $('gate').classList.add('open');
+    if (!playing) $('music').click();
+    setTimeout(() => { shower(160); release(8); launch(5); }, 700);
+  });
+
+  // music box: Happy Birthday (public domain), synthesized bells
+  const F = {G4: 392, A4: 440, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99};
+  const song = [['G4',.75],['G4',.25],['A4',1],['G4',1],['C5',1],['B4',2],['G4',.75],['G4',.25],['A4',1],['G4',1],['D5',1],['C5',2],
+    ['G4',.75],['G4',.25],['G5',1],['E5',1],['C5',1],['B4',1],['A4',2],['F5',.75],['F5',.25],['E5',1],['C5',1],['D5',1],['C5',3]];
+  const BEAT = .48, LEN = song.reduce((a, n) => a + n[1], 0) * BEAT + 1.6;
+  let ac, bus, master, loopT, playing = false;
+  function bell(f, at) {
+    const g = ac.createGain(); g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(.22, at + .006); g.gain.exponentialRampToValueAtTime(.001, at + 2.2);
+    g.connect(master);
+    [[1, 1], [2.01, .28], [3.02, .08]].forEach(([m, a]) => { const o = ac.createOscillator(), og = ac.createGain();
+      o.type = 'sine'; o.frequency.value = f * m; og.gain.value = a; o.connect(og).connect(g); o.start(at); o.stop(at + 2.3); });
+  }
+  function schedule() {
+    let at = ac.currentTime + .08;
+    for (const [n, b] of song) { bell(F[n] * 2, at); at += b * BEAT; }
+    loopT = setTimeout(() => playing && schedule(), LEN * 1000);
+  }
+  $('music').addEventListener('click', e => {
+    const b = e.currentTarget;
+    if (playing) { playing = false; clearTimeout(loopT); master.gain.setTargetAtTime(0, ac.currentTime, .08);
+      b.textContent = '♪ Play the music box'; b.setAttribute('aria-pressed', 'false'); return; }
+    try {
+      if (!ac) { ac = new (window.AudioContext || window.webkitAudioContext)(); bus = ac.createGain(); bus.connect(ac.destination);
+        const dl = ac.createDelay(), fb = ac.createGain(), wet = ac.createGain(); dl.delayTime.value = .29; fb.gain.value = .38; wet.gain.value = .35;
+        bus.connect(dl); dl.connect(fb).connect(dl); dl.connect(wet).connect(ac.destination); }
+      ac.resume(); master = ac.createGain(); master.gain.value = .7; master.connect(bus);
+      playing = true; schedule(); b.textContent = '❚❚ Pause the music box'; b.setAttribute('aria-pressed', 'true');
+    } catch (err) { b.textContent = 'Sound is not available here'; }
+  });
+})();
+</script>
+
+</body>
+</html>
